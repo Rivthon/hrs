@@ -32,6 +32,35 @@ class EmployeeImportExportTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'ani@kampus.ac.id', 'role' => 'dosen']);
     }
 
+    public function test_import_template_uses_excel_friendly_separate_columns(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get(route('employees.import-template'));
+
+        $response->assertOk()->assertDownload('template-import-pegawai.csv');
+        $content = $response->streamedContent();
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $content);
+        $this->assertStringContainsString('nama_lengkap;gelar_depan;gelar_belakang;jenis_kelamin', $content);
+    }
+
+    public function test_admin_can_import_semicolon_separated_csv(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Department::factory()->create(['code' => 'BAAK']);
+        Position::factory()->create(['name' => 'Staf Administrasi']);
+        $csv = implode("\n", [
+            'nama_lengkap;jenis_kelamin;tanggal_masuk;tanggal_lahir;nik;nip;kode_departemen;jabatan;no_hp;alamat_ktp;pendidikan_terakhir;perguruan_tinggi;program_studi;email;nama_ibu;role',
+            'Siti Rahma;female;2024-02-01;1992-06-10;3273010101920003;PEG003;BAAK;Staf Administrasi;081234567892;Jl. Akademik;S1;Universitas Contoh;Administrasi;siti@kampus.ac.id;Aminah;staff',
+        ]);
+
+        $this->actingAs($admin)->post(route('employees.import'), [
+            'file' => UploadedFile::fake()->createWithContent('employees.csv', $csv),
+        ])->assertRedirect(route('employees.index'));
+
+        $this->assertDatabaseHas('employees', ['nip' => 'PEG003', 'full_name' => 'Siti Rahma']);
+    }
+
     public function test_export_escapes_spreadsheet_formula_values(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -40,6 +69,8 @@ class EmployeeImportExportTest extends TestCase
         $response = $this->actingAs($admin)->get(route('employees.export'));
 
         $response->assertOk()->assertDownload();
-        $this->assertStringContainsString("'=2+2", $response->streamedContent());
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('NIP;"Nama Lengkap";Email', $content);
+        $this->assertStringContainsString("'=2+2", $content);
     }
 }

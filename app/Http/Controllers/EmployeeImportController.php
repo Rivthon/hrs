@@ -25,13 +25,16 @@ class EmployeeImportController extends Controller
             return back()->withErrors(['file' => 'File tidak dapat dibaca.']);
         }
 
-        $header = fgetcsv($stream);
+        $firstLine = fgets($stream);
 
-        if ($header === false) {
+        if ($firstLine === false) {
             fclose($stream);
 
             return back()->withErrors(['file' => 'File CSV tidak memiliki header.']);
         }
+
+        $delimiter = substr_count($firstLine, ';') > substr_count($firstLine, ',') ? ';' : ',';
+        $header = str_getcsv($firstLine, $delimiter);
 
         $header = array_map(fn (string $column): string => Str::slug(ltrim($column, "\xEF\xBB\xBF"), '_'), $header);
         $requiredHeaders = ['nama_lengkap', 'jenis_kelamin', 'tanggal_masuk', 'tanggal_lahir', 'nik', 'nip', 'kode_departemen', 'jabatan', 'no_hp', 'alamat_ktp', 'pendidikan_terakhir', 'perguruan_tinggi', 'program_studi', 'email', 'nama_ibu', 'role'];
@@ -43,7 +46,7 @@ class EmployeeImportController extends Controller
         }
 
         $rows = [];
-        while (($values = fgetcsv($stream)) !== false) {
+        while (($values = fgetcsv($stream, null, $delimiter)) !== false) {
             if (count($values) !== count($header) || collect($values)->filter(fn ($value): bool => trim((string) $value) !== '')->isEmpty()) {
                 continue;
             }

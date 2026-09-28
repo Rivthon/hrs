@@ -14,7 +14,8 @@ class EmployeeExportController extends Controller
     {
         return response()->streamDownload(function (): void {
             $stream = fopen('php://output', 'w');
-            fputcsv($stream, ['NIP', 'Nama Lengkap', 'Email', 'Role', 'Departemen', 'Jabatan', 'Status', 'Tanggal Masuk', 'Masa Kerja']);
+            fwrite($stream, "\xEF\xBB\xBF");
+            fputcsv($stream, ['NIP', 'Nama Lengkap', 'Email', 'Role', 'Departemen', 'Jabatan', 'Status', 'Tanggal Masuk', 'Masa Kerja'], ';');
 
             Employee::query()
                 ->with(['department', 'position', 'user'])
@@ -31,7 +32,7 @@ class EmployeeExportController extends Controller
                             $employee->status,
                             $employee->joined_on->format('Y-m-d'),
                             $employee->length_of_service,
-                        ]));
+                        ]), ';');
                     }
                 });
 

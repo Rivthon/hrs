@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeExportController;
 use App\Http\Controllers\EmployeeImportController;
@@ -30,5 +31,6 @@ Route::middleware(['auth', 'can:manage-users'])->group(function (): void {
     Route::get('employees/import-template', EmployeeImportTemplateController::class)->name('employees.import-template');
     Route::post('employees/import', [EmployeeImportController::class, 'store'])->name('employees.import');
     Route::resource('employees', EmployeeController::class)->except('destroy');
+    Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('public-holidays', PublicHolidayController::class)->only(['index', 'store', 'destroy']);
 });
