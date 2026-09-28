@@ -28,7 +28,20 @@
         .net { margin-top: 24px; font-size: 12px; font-weight: bold; }
         .signature { text-align: center; width: 31%; line-height: 1.5; }
         .signature img { width: 115px; height: 72px; object-fit: contain; }
-        .verified { margin: 16px auto 12px; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
+        .verified {
+            width: 126px;
+            margin: 14px auto 12px;
+            padding: 13px 5px;
+            border: 4px double #b91c1c;
+            border-radius: 50%;
+            color: #b91c1c;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.4px;
+            line-height: 1;
+            text-align: center;
+            transform: rotate(-7deg);
+        }
         .muted { color: #444; }
     </style>
 </head>
