@@ -1,0 +1,19 @@
+@extends('layouts.app')
+@section('title', 'Detail Payroll | HRS Kampus')
+@section('content')
+    <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div><a href="{{ route('payroll-periods.show', $payroll->period) }}" class="text-sm font-semibold text-brand-700">← Payroll {{ $payroll->period->period_date->format('m/Y') }}</a><h1 class="mt-3 text-3xl font-semibold">Rincian Payroll</h1><p class="mt-2 text-sm text-slate-500">{{ $payroll->employee->display_name }} · {{ $payroll->employee->nip }}</p></div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('payrolls.slip', $payroll) }}" class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-center text-sm font-semibold">Unduh Slip PDF</a>
+            <form method="POST" action="{{ route('payrolls.email-slip.store', $payroll) }}" onsubmit="return confirm('Kirim slip gaji ke {{ $payroll->employee->email ?: 'email karyawan' }}?')">@csrf<button type="submit" class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white">Kirim Email</button></form>
+            <a href="{{ route('payrolls.edit', $payroll) }}" class="rounded-xl bg-brand-600 px-5 py-2.5 text-center text-sm font-semibold text-white">Edit Komponen</a>
+        </div>
+    </div>
+    @php
+        $earnings = ['base_salary' => 'Gaji Pokok', 'transport_allowance' => 'Tunjangan Transport', 'position_allowance' => 'Tunjangan Jabatan', 'functional_allowance' => 'Tunjangan Fungsional', 'teaching_honor' => 'Honor Mengajar', 'proctoring_honor' => 'Honor Mengawas', 'final_seminar_honor' => 'Honor Seminar Akhir', 'thesis_defense_honor' => 'Honor Hasil & Sidang Skripsi', 'thesis_supervisor_honor' => 'Honor Pembimbing Skripsi', 'pkk_supervision_honor' => 'Supervisi PKK', 'practical_exam_honor' => 'Uprak', 'duty_honor' => 'Piket / Dinas'];
+        $deductions = ['bpjs_employment_deduction' => 'BPJS Ketenagakerjaan', 'bpjs_health_deduction' => 'BPJS Kesehatan', 'income_tax_deduction' => 'PPh Pasal 21', 'transport_deduction' => 'Transport', 'lateness_deduction' => 'Keterlambatan'];
+    @endphp
+    <div class="mt-6 grid gap-6 xl:grid-cols-2"><section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 class="font-semibold">Pendapatan</h2><dl class="mt-5 flex flex-col gap-3">@foreach ($earnings as $field => $label)<div class="flex justify-between gap-4 text-sm"><dt class="text-slate-500">{{ $label }}</dt><dd class="font-semibold">Rp {{ number_format((float) $payroll->{$field}, 0, ',', '.') }}</dd></div>@endforeach<div class="mt-2 flex justify-between border-t border-slate-200 pt-4"><dt class="font-semibold">Total Pendapatan</dt><dd class="text-lg font-bold text-brand-700">Rp {{ number_format((float) $payroll->gross_income, 0, ',', '.') }}</dd></div></dl></section>
+        <section class="rounded-2xl border border-red-100 bg-white p-6 shadow-sm"><h2 class="font-semibold">Potongan</h2><dl class="mt-5 flex flex-col gap-3">@foreach ($deductions as $field => $label)<div class="flex justify-between gap-4 text-sm"><dt class="text-slate-500">{{ $label }}</dt><dd class="font-semibold text-red-600">Rp {{ number_format((float) $payroll->{$field}, 0, ',', '.') }}</dd></div>@endforeach<div class="mt-2 flex justify-between border-t border-slate-200 pt-4"><dt class="font-semibold">Total Potongan</dt><dd class="text-lg font-bold text-red-600">Rp {{ number_format((float) $payroll->total_deductions, 0, ',', '.') }}</dd></div></dl></section></div>
+    <section class="mt-6 rounded-2xl bg-slate-900 p-6 text-white"><p class="text-sm text-slate-400">Gaji Bersih</p><p class="mt-2 text-4xl font-semibold">Rp {{ number_format((float) $payroll->net_salary, 0, ',', '.') }}</p>@if ($payroll->notes)<p class="mt-4 border-t border-white/10 pt-4 text-sm text-slate-300">{{ $payroll->notes }}</p>@endif</section>
+@endsection

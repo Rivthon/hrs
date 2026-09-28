@@ -81,6 +81,11 @@ class Employee extends Model
         return $this->hasMany(LeaveRequest::class, 'direct_supervisor_id');
     }
 
+    public function payrolls(): HasMany
+    {
+        return $this->hasMany(Payroll::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return collect([$this->title_prefix, $this->full_name, $this->title_suffix])

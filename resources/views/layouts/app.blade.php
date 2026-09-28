@@ -19,7 +19,8 @@
                 <a href="{{ route('employees.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Manajemen User</a>
                 @can('manage-users')<a href="{{ route('departments.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('departments.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Master Departemen</a>@endcan
                 <a href="{{ route('leave-requests.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('leave-requests.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Cuti & Izin</a>
-                @foreach (['Kehadiran', 'Penggajian'] as $menu)
+                @can('manage-users')<a href="{{ route('payroll-periods.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('payroll-periods.*', 'payrolls.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Payroll</a>@endcan
+                @foreach (['Kehadiran'] as $menu)
                     <span class="cursor-not-allowed rounded-xl px-4 py-3 text-slate-300">{{ $menu }}</span>
                 @endforeach
             </nav>
@@ -33,6 +34,9 @@
             <div class="mx-auto max-w-7xl px-5 py-8 md:px-8 lg:px-10">
                 @if (session('success'))
                     <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
                 @endif
                 @if ($errors->any())
                     <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>

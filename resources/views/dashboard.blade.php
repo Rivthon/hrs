@@ -34,7 +34,8 @@
                 <a href="{{ route('leave-requests.index') }}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-500 hover:bg-slate-50">
                     <span class="size-2 rounded-full border border-slate-300"></span> Cuti & Izin
                 </a>
-                @foreach (['Jabatan', 'Kehadiran', 'Penggajian'] as $menu)
+                @auth @can('manage-users')<a href="{{ route('payroll-periods.index') }}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-500 hover:bg-slate-50"><span class="size-2 rounded-full border border-slate-300"></span> Payroll</a>@endcan @endauth
+                @foreach (['Jabatan', 'Kehadiran'] as $menu)
                     <span class="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-slate-400" title="Segera hadir">
                         <span class="size-2 rounded-full border border-slate-300"></span> {{ $menu }}
                     </span>
