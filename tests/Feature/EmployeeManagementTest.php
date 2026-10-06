@@ -41,6 +41,39 @@ class EmployeeManagementTest extends TestCase
         $this->assertTrue(Hash::check('198765432100000001', $employee->user->password));
     }
 
+    public function test_admin_editing_employee_without_user_creates_account_with_nip_as_initial_password(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $department = Department::factory()->create();
+        $position = Position::factory()->create();
+        $employee = Employee::factory()
+            ->for($department)
+            ->for($position)
+            ->create([
+                'user_id' => null,
+                'nip' => '198765432100000001',
+                'email' => 'email-lama@kampus.ac.id',
+            ]);
+
+        $response = $this->actingAs($admin)->put(
+            route('employees.update', $employee),
+            $this->validPayload($department, $position, [
+                'full_name' => 'Mochamad Rival Maurizky',
+                'nip' => $employee->nip,
+                'email' => 'rival@sbh.ac.id',
+            ]),
+        );
+
+        $response->assertRedirect(route('employees.show', $employee));
+
+        $employee->refresh()->load('user');
+
+        $this->assertNotNull($employee->user);
+        $this->assertSame('rival@sbh.ac.id', $employee->user->email);
+        $this->assertTrue($employee->user->must_change_password);
+        $this->assertTrue(Hash::check($employee->nip, $employee->user->password));
+    }
+
     public function test_lecturer_must_have_nidn(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

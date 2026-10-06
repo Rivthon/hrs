@@ -205,6 +205,8 @@ class PayrollManagementTest extends TestCase
             ->assertSessionHas('success');
 
         Queue::assertPushed(SendPayrollSlipEmail::class, 2);
+        $this->assertSame('finalized', $period->refresh()->status);
+        $this->assertNotNull($period->finalized_at);
     }
 
     public function test_queued_payroll_job_sends_pdf_to_employee_email(): void

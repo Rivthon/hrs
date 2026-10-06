@@ -15,17 +15,17 @@ class SaveEmployeeAction
     public function handle(array $data, ?Employee $employee = null): Employee
     {
         return DB::transaction(function () use ($data, $employee): Employee {
-            $isNewEmployee = $employee === null;
             $employee ??= new Employee;
 
             $user = $employee->user ?? new User;
+            $isNewUser = ! $user->exists;
             $user->fill([
                 'name' => $data['full_name'],
                 'email' => $data['email'],
                 'role' => $data['role'],
             ]);
 
-            if ($isNewEmployee) {
+            if ($isNewUser) {
                 $user->password = $data['nip'];
                 $user->must_change_password = true;
             }

@@ -26,6 +26,13 @@ class PayrollPeriodSlipEmailController extends Controller
             return back()->with('error', 'Tidak ada karyawan dengan email aktif pada periode ini.');
         }
 
-        return back()->with('success', "{$queued} slip gaji dijadwalkan untuk dikirim melalui email.");
+        if ($payrollPeriod->status === 'draft') {
+            $payrollPeriod->update([
+                'status' => 'finalized',
+                'finalized_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', "Payroll berhasil difinalkan. {$queued} slip gaji masuk antrean pengiriman email.");
     }
 }
