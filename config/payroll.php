@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'teaching_honor_per_meeting' => (int) env('PAYROLL_TEACHING_HONOR_PER_MEETING', 50000),
     'institution' => [
         'name' => env('PAYROLL_INSTITUTION_NAME', 'STIKes Bogor Husada'),
         'address_line_1' => env('PAYROLL_ADDRESS_LINE_1', 'Jl. Sholeh Iskandar No.4 RT.02 RW 03'),

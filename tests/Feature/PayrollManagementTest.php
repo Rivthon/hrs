@@ -9,9 +9,12 @@ use App\Models\Employee;
 use App\Models\Payroll;
 use App\Models\PayrollPeriod;
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class PayrollManagementTest extends TestCase
@@ -36,6 +39,53 @@ class PayrollManagementTest extends TestCase
         $this->assertSame('750000.00', $payroll->transport_allowance);
         $this->assertSame('6750000.00', $payroll->net_salary);
         $this->assertDatabaseCount('payrolls', 1);
+    }
+
+    public function test_teaching_honor_is_automatically_calculated_from_monthly_pas_bap_and_remains_editable(): void
+    {
+        config()->set('database.connections.pas', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ]);
+        DB::purge('pas');
+        foreach (['pertemuan', 'pertemuan_praktik'] as $table) {
+            Schema::connection('pas')->create($table, function (Blueprint $blueprint): void {
+                $blueprint->id();
+                $blueprint->unsignedBigInteger('dosen_id');
+                $blueprint->date('tanggal_pertemuan');
+            });
+        }
+
+        $hr = User::factory()->create(['role' => 'hr']);
+        $lecturer = User::factory()->create(['role' => 'dosen']);
+        $employee = Employee::factory()->active()->for($lecturer)->create([
+            'pas_dosen_id' => 6,
+            'base_salary' => 3000000,
+            'transport_allowance' => 70000,
+        ]);
+        DB::connection('pas')->table('pertemuan')->insert([
+            ['dosen_id' => 6, 'tanggal_pertemuan' => '2026-09-02'],
+            ['dosen_id' => 6, 'tanggal_pertemuan' => '2026-09-09'],
+            ['dosen_id' => 6, 'tanggal_pertemuan' => '2026-09-16'],
+            ['dosen_id' => 6, 'tanggal_pertemuan' => '2026-08-30'],
+        ]);
+        DB::connection('pas')->table('pertemuan_praktik')->insert([
+            ['dosen_id' => 6, 'tanggal_pertemuan' => '2026-09-23'],
+        ]);
+
+        $this->actingAs($hr)->post(route('payroll-periods.store'), ['period' => '2026-09']);
+
+        $payroll = Payroll::whereBelongsTo($employee)->firstOrFail();
+        $this->assertSame('200000.00', $payroll->teaching_honor);
+        $this->assertSame('3270000.00', $payroll->gross_income);
+
+        $this->actingAs($hr)->put(route('payrolls.update', $payroll), $this->payrollPayload([
+            'teaching_honor' => 'Rp 250.000',
+        ]))->assertRedirect(route('payrolls.show', $payroll));
+
+        $this->assertSame('250000.00', $payroll->refresh()->teaching_honor);
     }
 
     public function test_hr_can_update_manual_components_and_totals_are_recalculated(): void
