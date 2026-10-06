@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeImportController;
 use App\Http\Controllers\EmployeeImportTemplateController;
 use App\Http\Controllers\HrLeaveApprovalController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\LecturerBapController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\PayrollPeriodSlipEmailController;
@@ -28,6 +29,7 @@ Route::middleware('guest')->group(function (): void {
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('bap-saya', LecturerBapController::class)->name('lecturer-bap.index');
     Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'create', 'store', 'show']);
     Route::put('leave-requests/{leaveRequest}/supervisor-approval', [SupervisorLeaveApprovalController::class, 'update'])->name('leave-requests.supervisor-approval');
     Route::put('leave-requests/{leaveRequest}/hr-approval', [HrLeaveApprovalController::class, 'update'])->name('leave-requests.hr-approval');

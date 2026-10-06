@@ -64,6 +64,22 @@ return [
             ]) : [],
         ],
 
+        'pas' => [
+            'driver' => 'mysql',
+            'host' => env('PAS_DB_HOST', '127.0.0.1'),
+            'port' => env('PAS_DB_PORT', '3306'),
+            'database' => env('PAS_DB_DATABASE', 'db_pas'),
+            'username' => env('PAS_DB_USERNAME', 'root'),
+            'password' => env('PAS_DB_PASSWORD', ''),
+            'unix_socket' => env('PAS_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

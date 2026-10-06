@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Actions\AuthenticatePasLecturerAction;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -24,16 +24,20 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ];
     }
 
-    public function authenticate(): void
+    public function authenticate(AuthenticatePasLecturerAction $authenticatePasLecturer): void
     {
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! $authenticatePasLecturer->handle(
+            $this->string('email')->trim()->toString(),
+            $this->string('password')->toString(),
+            $this->boolean('remember'),
+        )) {
             throw ValidationException::withMessages([
-                'email' => 'Email atau password tidak sesuai.',
+                'email' => 'Email, NIDN, kode dosen, atau password tidak sesuai. Pastikan data dosen sudah terdaftar di HRS.',
             ]);
         }
     }

@@ -19,6 +19,7 @@
                 <a href="{{ route('employees.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Manajemen User</a>
                 @can('manage-users')<a href="{{ route('departments.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('departments.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Master Departemen</a>@endcan
                 <a href="{{ route('leave-requests.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('leave-requests.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Cuti & Izin</a>
+                @if (auth()->user()?->role === 'dosen')<a href="{{ route('lecturer-bap.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('lecturer-bap.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">BAP Saya</a>@endif
                 @can('manage-users')<a href="{{ route('payroll-periods.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('payroll-periods.*', 'payrolls.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Payroll</a>@endcan
                 @foreach (['Kehadiran'] as $menu)
                     <span class="cursor-not-allowed rounded-xl px-4 py-3 text-slate-300">{{ $menu }}</span>

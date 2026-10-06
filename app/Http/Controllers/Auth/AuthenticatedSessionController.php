@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\AuthenticatePasLecturerAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Contracts\View\View;
@@ -16,9 +17,9 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, AuthenticatePasLecturerAction $authenticatePasLecturer): RedirectResponse
     {
-        $request->authenticate();
+        $request->authenticate($authenticatePasLecturer);
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));
