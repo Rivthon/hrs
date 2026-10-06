@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Position;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,12 +15,13 @@ class DashboardControllerTest extends TestCase
 
     public function test_dashboard_renders_workforce_summary(): void
     {
+        $user = User::factory()->create(['role' => 'admin']);
         $department = Department::factory()->create();
         $position = Position::factory()->create();
         Employee::factory()->count(2)->active()->for($department)->for($position)->create();
         Employee::factory()->for($department)->for($position)->create(['status' => 'inactive']);
 
-        $this->get(route('dashboard'))
+        $this->actingAs($user)->get(route('dashboard'))
             ->assertOk()
             ->assertViewHas('statistics', [
                 'employees' => 3,
@@ -33,12 +35,13 @@ class DashboardControllerTest extends TestCase
 
     public function test_dashboard_only_counts_active_master_data(): void
     {
+        $user = User::factory()->create(['role' => 'admin']);
         Department::factory()->create();
         Department::factory()->create(['is_active' => false]);
         Position::factory()->create();
         Position::factory()->create(['is_active' => false]);
 
-        $this->get(route('dashboard'))
+        $this->actingAs($user)->get(route('dashboard'))
             ->assertViewHas('statistics.departments', 1)
             ->assertViewHas('statistics.positions', 1);
     }

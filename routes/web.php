@@ -18,7 +18,8 @@ use App\Http\Controllers\PublicHolidayController;
 use App\Http\Controllers\SupervisorLeaveApprovalController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', DashboardController::class)->name('dashboard');
+Route::view('/', 'welcome')->name('home');
+Route::get('dashboard', DashboardController::class)->middleware('auth')->name('dashboard');
 Route::middleware('guest')->group(function (): void {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
