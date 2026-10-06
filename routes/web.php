@@ -15,6 +15,7 @@ use App\Http\Controllers\PayrollPeriodSlipEmailController;
 use App\Http\Controllers\PayrollSlipController;
 use App\Http\Controllers\PayrollSlipEmailController;
 use App\Http\Controllers\PublicHolidayController;
+use App\Http\Controllers\PublicHolidaySyncController;
 use App\Http\Controllers\SupervisorLeaveApprovalController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'can:manage-users'])->group(function (): void {
     Route::resource('employees', EmployeeController::class)->except('destroy');
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('public-holidays', PublicHolidayController::class)->only(['index', 'store', 'destroy']);
+    Route::post('public-holidays/sync', [PublicHolidaySyncController::class, 'store'])->name('public-holidays.sync.store');
     Route::resource('payroll-periods', PayrollPeriodController::class)->only(['index', 'store', 'show', 'destroy']);
     Route::post('payroll-periods/{payrollPeriod}/email-slips', [PayrollPeriodSlipEmailController::class, 'store'])->name('payroll-periods.email-slips.store');
     Route::get('payrolls/{payroll}', [PayrollController::class, 'show'])->name('payrolls.show');
