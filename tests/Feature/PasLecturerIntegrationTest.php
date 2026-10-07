@@ -97,6 +97,30 @@ class PasLecturerIntegrationTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_lecturer_can_log_in_when_pas_uses_a_non_bcrypt_password_hash(): void
+    {
+        $user = User::factory()->create(['role' => 'dosen', 'email' => 'dosen@example.com']);
+        Employee::factory()->for($user)->create([
+            'nidn' => '0417068401',
+            'email' => 'dosen@example.com',
+        ]);
+        DB::connection('pas')->table('dosen')->insert([
+            'dosen_id' => 6,
+            'kd_dosen' => 'DTB001',
+            'nama' => 'Dosen PAS',
+            'nidn' => '0417068401',
+            'email' => 'dosen@example.com',
+            'password' => password_hash('password-pas', PASSWORD_ARGON2ID),
+        ]);
+
+        $this->post(route('login'), [
+            'email' => '0417068401',
+            'password' => 'password-pas',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_non_lecturer_cannot_open_personal_bap(): void
     {
         $staff = User::factory()->create(['role' => 'staff']);

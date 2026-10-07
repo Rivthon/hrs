@@ -6,7 +6,6 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 class AuthenticatePasLecturerAction
@@ -36,7 +35,7 @@ class AuthenticatePasLecturerAction
             return false;
         }
 
-        if (! $pasLecturer || blank($pasLecturer->password) || ! Hash::check($password, $pasLecturer->password)) {
+        if (! $pasLecturer || blank($pasLecturer->password) || ! password_verify($password, $pasLecturer->password)) {
             return false;
         }
 
