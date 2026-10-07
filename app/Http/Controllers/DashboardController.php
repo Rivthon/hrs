@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\LeaveRequestStatus;
 use App\Enums\LeaveType;
+use App\Models\BusinessTrip;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -22,9 +23,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $employeesOnLeaveToday = $this->employeesOnLeaveToday();
+        $supervisedBusinessTrips = $this->supervisedBusinessTrips($user);
 
         if (! $user->can('manage-users')) {
-            return $this->employeeDashboard($user, $employeesOnLeaveToday);
+            return $this->employeeDashboard($user, $employeesOnLeaveToday, $supervisedBusinessTrips);
         }
 
         $statistics = [
@@ -83,11 +85,15 @@ class DashboardController extends Controller
             'latestPayrollPeriod',
             'upcomingHolidays',
             'employeesOnLeaveToday',
+            'supervisedBusinessTrips',
         ));
     }
 
-    /** @param Collection<int, LeaveRequest> $employeesOnLeaveToday */
-    private function employeeDashboard(User $user, Collection $employeesOnLeaveToday): View
+    /**
+     * @param  Collection<int, LeaveRequest>  $employeesOnLeaveToday
+     * @param  Collection<int, BusinessTrip>  $supervisedBusinessTrips
+     */
+    private function employeeDashboard(User $user, Collection $employeesOnLeaveToday, Collection $supervisedBusinessTrips): View
     {
         $employee = $user->employee;
         abort_unless($employee, 404, 'Data pegawai HRS belum tersedia.');
@@ -126,7 +132,26 @@ class DashboardController extends Controller
             ->get();
         $bapSummary = $user->role === 'dosen' ? $this->lecturerBapSummary($employee) : null;
 
-        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'replacementLeaveAssignments', 'bapSummary', 'employeesOnLeaveToday'));
+        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'replacementLeaveAssignments', 'bapSummary', 'employeesOnLeaveToday', 'supervisedBusinessTrips'));
+    }
+
+    /** @return Collection<int, BusinessTrip> */
+    private function supervisedBusinessTrips(User $user): Collection
+    {
+        $supervisor = $user->employee;
+
+        if ($supervisor === null) {
+            return new Collection;
+        }
+
+        return BusinessTrip::query()
+            ->with(['employee:id,department_id,full_name,title_prefix,title_suffix', 'employee.department:id,name'])
+            ->whereHas('employee', fn ($query) => $query->where('supervisor_id', $supervisor->id))
+            ->whereIn('status', ['assigned', 'accepted'])
+            ->whereDate('end_date', '>=', today())
+            ->orderBy('start_date')
+            ->limit(5)
+            ->get();
     }
 
     /** @return Collection<int, LeaveRequest> */

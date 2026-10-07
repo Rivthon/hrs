@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\LeaveRequestStatus;
 use App\Enums\LeaveType;
+use App\Models\BusinessTrip;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -176,5 +177,29 @@ class DashboardControllerTest extends TestCase
             ->assertOk()
             ->assertSeeText('Notifikasi Pengganti Cuti')
             ->assertSeeText('Siti Pengaju Cuti mengajukan cuti dan Anda menjadi penggantinya.');
+    }
+
+    public function test_direct_supervisor_sees_subordinate_business_trip_information_without_approval_action(): void
+    {
+        $supervisorUser = User::factory()->create(['role' => 'staff']);
+        $supervisor = Employee::factory()->active()->for($supervisorUser)->create();
+        $subordinate = Employee::factory()->active()->create([
+            'full_name' => 'Bawahan Perjalanan Dinas',
+            'supervisor_id' => $supervisor->id,
+        ]);
+        BusinessTrip::factory()->for($subordinate)->create([
+            'title' => 'Kunjungan Kerja Kampus',
+            'destination' => 'Bandung',
+            'status' => 'accepted',
+            'start_date' => today(),
+            'end_date' => today()->addDay(),
+        ]);
+
+        $this->actingAs($supervisorUser)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('Informasi Perjalanan Dinas Bawahan')
+            ->assertSeeText('Bawahan Perjalanan Dinas')
+            ->assertSeeText('Kunjungan Kerja Kampus')
+            ->assertSeeText('Pemberitahuan saja, tidak memerlukan persetujuan Anda.');
     }
 }

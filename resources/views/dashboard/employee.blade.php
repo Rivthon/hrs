@@ -20,6 +20,8 @@
         </nav>
     </section>
 
+    @include('dashboard._supervised-business-trips', ['supervisedBusinessTrips' => $supervisedBusinessTrips])
+
     @if ($pendingBusinessTrips->isNotEmpty())
         <section class="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
             <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><p class="text-sm font-semibold text-amber-900">Anda memiliki {{ $pendingBusinessTrips->count() }} penugasan perjalanan dinas baru</p><p class="mt-1 text-xs text-amber-700">Silakan periksa rincian tugas dan berikan konfirmasi penerimaan.</p></div><a href="{{ route('business-trips.index') }}" class="w-fit rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white">Lihat Penugasan</a></div>

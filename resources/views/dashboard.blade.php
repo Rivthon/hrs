@@ -4,6 +4,7 @@
 
 @section('content')
     @include('dashboard._leave-popup', ['employeesOnLeaveToday' => $employeesOnLeaveToday])
+    @include('dashboard._supervised-business-trips', ['supervisedBusinessTrips' => $supervisedBusinessTrips])
 
     <section class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
