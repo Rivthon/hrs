@@ -23,6 +23,9 @@ use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\PayrollPeriodSlipEmailController;
 use App\Http\Controllers\PayrollSlipController;
 use App\Http\Controllers\PayrollSlipEmailController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileEmailController;
+use App\Http\Controllers\ProfilePasswordController;
 use App\Http\Controllers\PublicHolidayController;
 use App\Http\Controllers\PublicHolidaySyncController;
 use App\Http\Controllers\SupervisorLeaveApprovalController;
@@ -42,6 +45,10 @@ Route::middleware('auth')->group(function (): void {
 });
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('profil-saya', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profil-saya', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profil-saya/email', ProfileEmailController::class)->name('profile.email.update');
+    Route::put('profil-saya/password', ProfilePasswordController::class)->middleware('throttle:5,1')->name('profile.password.update');
     Route::resource('business-trips', BusinessTripController::class)->only(['index', 'store', 'show']);
     Route::put('business-trips/{businessTrip}/response', [BusinessTripResponseController::class, 'update'])->name('business-trips.response.update');
     Route::put('business-trips/{businessTrip}/report', [BusinessTripReportController::class, 'update'])->name('business-trips.report.update');
