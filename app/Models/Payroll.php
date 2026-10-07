@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 #[Fillable([
     'payroll_period_id', 'employee_id', 'base_salary', 'transport_allowance', 'position_allowance',
@@ -40,6 +41,18 @@ class Payroll extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    protected static function booted(): void
+    {
+        $ensureDraft = function (Payroll $payroll): void {
+            if ($payroll->period()->where('status', 'finalized')->exists()) {
+                throw new LogicException('Payroll yang sudah final tidak dapat diubah.');
+            }
+        };
+
+        static::updating($ensureDraft);
+        static::deleting($ensureDraft);
     }
 
     /** @return array<string, string> */

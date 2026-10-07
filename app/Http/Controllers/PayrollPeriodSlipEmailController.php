@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\RecordAuditLogAction;
 use App\Jobs\SendPayrollSlipEmail;
 use App\Models\PayrollPeriod;
 use Illuminate\Http\RedirectResponse;
 
 class PayrollPeriodSlipEmailController extends Controller
 {
-    public function store(PayrollPeriod $payrollPeriod): RedirectResponse
+    public function store(PayrollPeriod $payrollPeriod, RecordAuditLogAction $recordAuditLog): RedirectResponse
     {
         $queued = 0;
 
@@ -31,6 +32,13 @@ class PayrollPeriodSlipEmailController extends Controller
                 'status' => 'finalized',
                 'finalized_at' => now(),
             ]);
+            $recordAuditLog->handle(
+                'payroll.finalized',
+                $payrollPeriod,
+                'Memfinalkan payroll periode '.$payrollPeriod->period_date->format('Y-m'),
+                ['status' => 'draft', 'finalized_at' => null],
+                ['status' => 'finalized', 'finalized_at' => $payrollPeriod->finalized_at],
+            );
         }
 
         return back()->with('success', "Payroll berhasil difinalkan. {$queued} slip gaji masuk antrean pengiriman email.");

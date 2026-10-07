@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\GeneratePayrollSlipPdfAction;
 use App\Jobs\SendPayrollSlipEmail;
 use App\Mail\PayrollSlipMail;
+use App\Models\AuditLog;
 use App\Models\Employee;
 use App\Models\Payroll;
 use App\Models\PayrollPeriod;
@@ -108,6 +109,10 @@ class PayrollManagementTest extends TestCase
         $this->assertSame('8000000.00', $payroll->gross_income);
         $this->assertSame('400000.00', $payroll->total_deductions);
         $this->assertSame('7600000.00', $payroll->net_salary);
+        $auditLog = AuditLog::where('event', 'payroll.updated')->firstOrFail();
+        $this->assertTrue($auditLog->actor->is($hr));
+        $this->assertSame('0.00', $auditLog->old_values['position_allowance']);
+        $this->assertSame('1000000.00', $auditLog->new_values['position_allowance']);
     }
 
     public function test_hr_can_submit_indonesian_rupiah_formatted_amounts(): void
@@ -187,6 +192,21 @@ class PayrollManagementTest extends TestCase
 
         $this->assertModelMissing($period);
         $this->assertModelMissing($payroll);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'payroll_period.deleted', 'actor_user_id' => $hr->id]);
+    }
+
+    public function test_finalized_period_cannot_be_edited_or_deleted(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $period = PayrollPeriod::factory()->create(['status' => 'finalized', 'finalized_at' => now()]);
+        $payroll = Payroll::factory()->for($period, 'period')->create();
+
+        $this->actingAs($hr)->get(route('payrolls.edit', $payroll))->assertForbidden();
+        $this->actingAs($hr)->put(route('payrolls.update', $payroll), $this->payrollPayload(['position_allowance' => 900000]))->assertForbidden();
+        $this->actingAs($hr)->delete(route('payroll-periods.destroy', $period))->assertForbidden();
+
+        $this->assertModelExists($period);
+        $this->assertSame('0.00', $payroll->refresh()->position_allowance);
     }
 
     public function test_staff_cannot_delete_payroll_period(): void
@@ -257,6 +277,7 @@ class PayrollManagementTest extends TestCase
         Queue::assertPushed(SendPayrollSlipEmail::class, 2);
         $this->assertSame('finalized', $period->refresh()->status);
         $this->assertNotNull($period->finalized_at);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'payroll.finalized', 'actor_user_id' => $hr->id]);
     }
 
     public function test_queued_payroll_job_sends_pdf_to_employee_email(): void

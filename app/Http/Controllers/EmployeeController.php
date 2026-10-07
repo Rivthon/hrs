@@ -14,6 +14,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -56,10 +57,12 @@ class EmployeeController extends Controller
      */
     public function store(StoreEmployeeRequest $request, SaveEmployeeAction $saveEmployee): RedirectResponse
     {
-        $employee = $saveEmployee->handle($request->validated());
+        $temporaryPassword = Str::password(16);
+        $employee = $saveEmployee->handle($request->validated(), initialPassword: $temporaryPassword);
 
         return redirect()->route('employees.show', $employee)
-            ->with('success', 'Data pengguna berhasil ditambahkan. Password awal menggunakan NIP.');
+            ->with('success', 'Data pengguna berhasil ditambahkan.')
+            ->with('temporary_password', $temporaryPassword);
     }
 
     /**

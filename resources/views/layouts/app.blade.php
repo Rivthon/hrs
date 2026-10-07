@@ -22,6 +22,7 @@
                 <a href="{{ route('business-trips.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('business-trips.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">{{ auth()->user()?->can('manage-users') ? 'Penugasan Dinas' : 'Laporan Perjalanan Dinas' }}</a>
                 @if (auth()->user()?->role === 'dosen')<a href="{{ route('lecturer-bap.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('lecturer-bap.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">BAP Saya</a>@endif
                 @can('manage-users')<a href="{{ route('payroll-periods.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('payroll-periods.*', 'payrolls.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Payroll</a>@endcan
+                @can('manage-users')<a href="{{ route('audit-logs.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('audit-logs.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Audit Log</a>@endcan
                 @foreach (['Kehadiran'] as $menu)
                     <span class="cursor-not-allowed rounded-xl px-4 py-3 text-slate-300">{{ $menu }}</span>
                 @endforeach

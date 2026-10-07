@@ -6,19 +6,25 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SaveEmployeeAction
 {
+    public function __construct(private readonly RecordAuditLogAction $recordAuditLog) {}
+
     /**
      * Create a new class instance.
      */
-    public function handle(array $data, ?Employee $employee = null): Employee
+    public function handle(array $data, ?Employee $employee = null, ?string $initialPassword = null): Employee
     {
-        return DB::transaction(function () use ($data, $employee): Employee {
+        return DB::transaction(function () use ($data, $employee, $initialPassword): Employee {
             $employee ??= new Employee;
+            $isNewEmployee = ! $employee->exists;
+            $oldEmployeeValues = $employee->getAttributes();
 
             $user = $employee->user ?? new User;
             $isNewUser = ! $user->exists;
+            $oldUserValues = $user->only(['name', 'email', 'role']);
             $user->fill([
                 'name' => $data['full_name'],
                 'email' => $data['email'],
@@ -26,8 +32,8 @@ class SaveEmployeeAction
             ]);
 
             if ($isNewUser) {
-                $user->password = $data['nip'];
-                $user->must_change_password = true;
+                $user->password = $initialPassword ?? Str::password(16);
+                $user->must_change_password = $data['role'] !== 'dosen';
             }
 
             $user->save();
@@ -41,6 +47,24 @@ class SaveEmployeeAction
             }
 
             $employee->fill($employeeData)->save();
+
+            $changedEmployeeValues = Arr::except($employee->getChanges(), ['updated_at']);
+            $changedUserValues = Arr::except($user->getChanges(), ['password', 'updated_at']);
+            $oldValues = collect(array_keys($changedEmployeeValues))
+                ->mapWithKeys(fn (string $key): array => [$key => $oldEmployeeValues[$key] ?? null])
+                ->merge(collect(array_keys($changedUserValues))->mapWithKeys(fn (string $key): array => ["user.{$key}" => $oldUserValues[$key] ?? null]))
+                ->all();
+            $newValues = collect($changedEmployeeValues)
+                ->merge(collect($changedUserValues)->mapWithKeys(fn (mixed $value, string $key): array => ["user.{$key}" => $value]))
+                ->all();
+
+            $this->recordAuditLog->handle(
+                $isNewEmployee ? 'employee.created' : 'employee.updated',
+                $employee,
+                ($isNewEmployee ? 'Menambahkan' : 'Memperbarui').' data pegawai '.$employee->full_name,
+                $oldValues,
+                $newValues,
+            );
 
             return $employee->refresh();
         });

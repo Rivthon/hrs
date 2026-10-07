@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\GeneratePayrollPeriodAction;
+use App\Actions\RecordAuditLogAction;
 use App\Http\Requests\StorePayrollPeriodRequest;
 use App\Models\PayrollPeriod;
 use Illuminate\Contracts\View\View;
@@ -28,13 +29,14 @@ class PayrollPeriodController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function store(StorePayrollPeriodRequest $request, GeneratePayrollPeriodAction $generatePayroll): RedirectResponse
+    public function store(StorePayrollPeriodRequest $request, GeneratePayrollPeriodAction $generatePayroll, RecordAuditLogAction $recordAuditLog): RedirectResponse
     {
         $period = PayrollPeriod::create([
             'period_date' => $request->validated('period_date'),
             'status' => 'draft',
         ]);
         $generatePayroll->handle($period);
+        $recordAuditLog->handle('payroll_period.created', $period, 'Membuat periode payroll '.$period->period_date->format('Y-m'));
 
         return redirect()->route('payroll-periods.show', $period)
             ->with('success', 'Periode payroll dibuat dan data pegawai aktif berhasil dimuat.');
@@ -66,10 +68,12 @@ class PayrollPeriodController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PayrollPeriod $payrollPeriod): RedirectResponse
+    public function destroy(PayrollPeriod $payrollPeriod, RecordAuditLogAction $recordAuditLog): RedirectResponse
     {
+        abort_if($payrollPeriod->status !== 'draft', 403, 'Periode payroll yang sudah final tidak dapat dihapus.');
         $periodName = $payrollPeriod->period_date->locale('id')->translatedFormat('F Y');
 
+        $recordAuditLog->handle('payroll_period.deleted', $payrollPeriod, "Menghapus periode payroll {$periodName}");
         $payrollPeriod->delete();
 
         return redirect()->route('payroll-periods.index')

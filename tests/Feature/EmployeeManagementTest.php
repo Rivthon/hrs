@@ -26,7 +26,7 @@ class EmployeeManagementTest extends TestCase
         $this->actingAs($staff)->get(route('employees.index'))->assertForbidden();
     }
 
-    public function test_admin_can_create_user_with_nip_as_hashed_initial_password(): void
+    public function test_admin_can_create_user_with_secure_temporary_password(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $department = Department::factory()->create();
@@ -38,10 +38,11 @@ class EmployeeManagementTest extends TestCase
         $response->assertRedirect(route('employees.show', $employee));
         $this->assertSame('Jl. Kampus No. 10', $employee->residential_address);
         $this->assertTrue($employee->user->must_change_password);
-        $this->assertTrue(Hash::check('198765432100000001', $employee->user->password));
+        $response->assertSessionHas('temporary_password');
+        $this->assertFalse(Hash::check('198765432100000001', $employee->user->password));
     }
 
-    public function test_admin_editing_employee_without_user_creates_account_with_nip_as_initial_password(): void
+    public function test_admin_editing_employee_without_user_creates_account_with_secure_password(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $department = Department::factory()->create();
@@ -71,7 +72,7 @@ class EmployeeManagementTest extends TestCase
         $this->assertNotNull($employee->user);
         $this->assertSame('rival@sbh.ac.id', $employee->user->email);
         $this->assertTrue($employee->user->must_change_password);
-        $this->assertTrue(Hash::check($employee->nip, $employee->user->password));
+        $this->assertFalse(Hash::check($employee->nip, $employee->user->password));
     }
 
     public function test_lecturer_must_have_nidn(): void

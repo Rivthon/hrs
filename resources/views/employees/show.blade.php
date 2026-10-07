@@ -3,8 +3,12 @@
 @section('content')
     <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div><a href="{{ route('employees.index') }}" class="text-sm font-semibold text-brand-700">← Manajemen User</a><h1 class="mt-3 text-3xl font-semibold">Detail Staff</h1></div>
-        <a href="{{ route('employees.edit', $employee) }}" class="rounded-xl bg-brand-600 px-5 py-2.5 text-center text-sm font-semibold text-white">Edit Data</a>
+        <div class="flex flex-wrap gap-2"><a href="{{ route('employees.edit', $employee) }}" class="rounded-xl bg-brand-600 px-5 py-2.5 text-center text-sm font-semibold text-white">Edit Data</a>@if ($employee->user && $employee->user->role !== 'dosen')<form method="POST" action="{{ route('employees.reset-password', $employee) }}" onsubmit="return confirm('Reset password akun ini? Password lama tidak dapat digunakan lagi.')">@csrf<button class="rounded-xl border border-amber-300 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-800">Reset Password</button></form>@endif</div>
     </div>
+
+    @if (session('temporary_password'))
+        <div class="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p class="font-semibold">Password sementara — hanya ditampilkan sekali</p><p class="mt-2 font-mono text-xl tracking-wide">{{ session('temporary_password') }}</p><p class="mt-2 text-sm">Salin dan berikan secara aman kepada pengguna. Pengguna wajib menggantinya saat login pertama.</p></div>
+    @endif
 
     <div class="mt-6 grid gap-6 lg:grid-cols-[20rem_1fr]">
         <aside class="h-fit rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
