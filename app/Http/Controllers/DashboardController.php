@@ -112,9 +112,21 @@ class DashboardController extends Controller
             ->orderBy('start_date')
             ->limit(3)
             ->get();
+        $replacementLeaveAssignments = LeaveRequest::query()
+            ->with(['employee:id,full_name,title_prefix,title_suffix', 'employee.department:id,name'])
+            ->whereBelongsTo($employee, 'replacement')
+            ->whereIn('status', [
+                LeaveRequestStatus::PendingSupervisor->value,
+                LeaveRequestStatus::PendingHr->value,
+                LeaveRequestStatus::Approved->value,
+            ])
+            ->whereDate('end_date', '>=', today())
+            ->latest('submitted_at')
+            ->limit(5)
+            ->get();
         $bapSummary = $user->role === 'dosen' ? $this->lecturerBapSummary($employee) : null;
 
-        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'bapSummary', 'employeesOnLeaveToday'));
+        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'replacementLeaveAssignments', 'bapSummary', 'employeesOnLeaveToday'));
     }
 
     /** @return Collection<int, LeaveRequest> */
@@ -126,6 +138,7 @@ class DashboardController extends Controller
                 'employee.user:id,role',
                 'employee.department:id,name',
                 'employee.position:id,name',
+                'replacement:id,full_name,title_prefix,title_suffix',
             ])
             ->where('status', LeaveRequestStatus::Approved->value)
             ->whereDate('start_date', '<=', today())

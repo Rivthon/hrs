@@ -33,7 +33,7 @@ class StoreLeaveRequestRequest extends FormRequest
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'start_time' => ['nullable', Rule::requiredIf($this->isPartialDay()), 'date_format:H:i'],
             'end_time' => ['nullable', Rule::requiredIf($this->isPartialDay()), 'date_format:H:i'],
-            'reason' => ['required', 'string', 'min:10', 'max:2000'],
+            'reason' => ['required', 'string', 'max:2000'],
             'supporting_document' => [
                 'nullable', Rule::requiredIf($this->input('leave_type') === LeaveType::Sick->value),
                 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120',

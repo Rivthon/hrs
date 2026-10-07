@@ -27,6 +27,17 @@
         </section>
     @endif
 
+    @if ($replacementLeaveAssignments->isNotEmpty())
+        <section class="mt-7 rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+            <div><p class="text-sm font-semibold text-sky-900">Notifikasi Pengganti Cuti</p><p class="mt-1 text-xs text-sky-700">Anda ditunjuk sebagai pegawai pengganti pada pengajuan berikut.</p></div>
+            <div class="mt-4 flex flex-col gap-3">
+                @foreach ($replacementLeaveAssignments as $leaveAssignment)
+                    <div class="rounded-xl border border-sky-100 bg-white p-4"><p class="text-sm font-semibold text-slate-800">{{ $leaveAssignment->employee->display_name }} mengajukan cuti dan Anda menjadi penggantinya.</p><p class="mt-1 text-xs text-slate-500">{{ $leaveAssignment->leave_type->label() }} · {{ $leaveAssignment->start_date->format('d/m/Y') }}–{{ $leaveAssignment->end_date->format('d/m/Y') }} · {{ $leaveAssignment->status->label() }}</p></div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <section id="profil" class="mt-7 grid gap-5 xl:grid-cols-[1.4fr_1fr]">
         <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex flex-col gap-5 sm:flex-row sm:items-center">

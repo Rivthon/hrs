@@ -30,7 +30,7 @@ class LeaveRequestWorkflowTest extends TestCase
             'replacement_employee_id' => $replacement->id,
             'start_date' => '2026-10-02',
             'end_date' => '2026-10-06',
-            'reason' => 'Keperluan keluarga yang tidak dapat ditinggalkan.',
+            'reason' => 'Izin',
         ]);
 
         $response->assertSessionHasNoErrors();
@@ -38,6 +38,7 @@ class LeaveRequestWorkflowTest extends TestCase
         $response->assertRedirect(route('leave-requests.show', $leaveRequest));
         $this->assertSame(2, $leaveRequest->total_working_days);
         $this->assertSame(LeaveRequestStatus::PendingSupervisor, $leaveRequest->status);
+        $this->assertSame('Izin', $leaveRequest->reason);
         $this->assertTrue($leaveRequest->directSupervisor->is($supervisor));
     }
 

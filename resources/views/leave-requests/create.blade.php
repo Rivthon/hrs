@@ -31,7 +31,7 @@
             </div>
 
             <label class="text-sm font-semibold md:col-span-2">Pegawai pengganti <select name="replacement_employee_id" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"><option value="">Pilih pegawai pengganti</option>@foreach ($replacements as $replacement)<option value="{{ $replacement->id }}" @selected((string) old('replacement_employee_id') === (string) $replacement->id)>{{ $replacement->display_name }} &mdash; {{ $replacement->department->name }}</option>@endforeach</select></label>
-            <label class="text-sm font-semibold md:col-span-2">Alasan dan keterangan <textarea name="reason" rows="5" required minlength="10" maxlength="2000" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">{{ old('reason') }}</textarea></label>
+            <label class="text-sm font-semibold md:col-span-2">Alasan dan keterangan <textarea name="reason" rows="5" required maxlength="2000" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">{{ old('reason') }}</textarea></label>
         </div>
         <div class="mt-6 flex justify-end gap-3"><a href="{{ route('leave-requests.index') }}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold">Batal</a><button @disabled($employee->supervisor === null) class="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Kirim Pengajuan</button></div>
     </form>

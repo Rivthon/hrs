@@ -112,8 +112,10 @@ class DashboardControllerTest extends TestCase
         $position = Position::factory()->create();
         $lecturer = Employee::factory()->active()->for($lecturerUser)->for($department)->for($position)->create(['full_name' => 'Dosen Sedang Cuti']);
         $finishedEmployee = Employee::factory()->active()->for($department)->for($position)->create(['full_name' => 'Pegawai Selesai Cuti']);
+        $replacement = Employee::factory()->active()->for($department)->for($position)->create(['full_name' => 'Budi Pegawai Pengganti']);
         LeaveRequest::factory()->create([
             'employee_id' => $lecturer->id,
+            'replacement_employee_id' => $replacement->id,
             'status' => LeaveRequestStatus::Approved,
             'leave_type' => LeaveType::Annual,
             'start_date' => '2026-10-06',
@@ -131,6 +133,7 @@ class DashboardControllerTest extends TestCase
             ->assertOk()
             ->assertSeeText('Tendik atau Dosen yang sedang Cuti Hari Ini')
             ->assertSeeText('Dosen Sedang Cuti')
+            ->assertSeeText('Pengganti: Budi Pegawai Pengganti')
             ->assertViewHas('employeesOnLeaveToday', fn ($leaveRequests): bool => $leaveRequests->pluck('employee_id')->all() === [$lecturer->id]);
     }
 
@@ -154,5 +157,24 @@ class DashboardControllerTest extends TestCase
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
             ->assertDontSeeText('Tendik atau Dosen yang sedang Cuti Hari Ini');
+    }
+
+    public function test_replacement_employee_sees_leave_assignment_notification(): void
+    {
+        $replacementUser = User::factory()->create(['role' => 'staff']);
+        $replacement = Employee::factory()->active()->for($replacementUser)->create();
+        $applicant = Employee::factory()->active()->create(['full_name' => 'Siti Pengaju Cuti']);
+        LeaveRequest::factory()->create([
+            'employee_id' => $applicant->id,
+            'replacement_employee_id' => $replacement->id,
+            'status' => LeaveRequestStatus::PendingSupervisor,
+            'start_date' => today()->addDay(),
+            'end_date' => today()->addDays(2),
+        ]);
+
+        $this->actingAs($replacementUser)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('Notifikasi Pengganti Cuti')
+            ->assertSeeText('Siti Pengaju Cuti mengajukan cuti dan Anda menjadi penggantinya.');
     }
 }
