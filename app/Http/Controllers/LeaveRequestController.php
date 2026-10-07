@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\LeaveRequestStatus;
+use App\Enums\LeaveType;
 use App\Http\Requests\StoreLeaveRequestRequest;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -21,6 +22,7 @@ class LeaveRequestController extends Controller
         $employee = auth()->user()->employee;
         $employee->loadSum(['leaveRequests as approved_leave_days' => fn ($query) => $query
             ->where('status', LeaveRequestStatus::Approved->value)
+            ->where('leave_type', LeaveType::Annual->value)
             ->whereYear('start_date', now()->year)], 'total_working_days');
         $myRequests = LeaveRequest::query()->with(['replacement', 'directSupervisor'])
             ->whereBelongsTo($employee)->latest('submitted_at')->paginate(10);
@@ -55,11 +57,16 @@ class LeaveRequestController extends Controller
     public function store(StoreLeaveRequestRequest $request): RedirectResponse
     {
         $employee = $request->user()->employee;
+        $documentPath = $request->hasFile('supporting_document')
+            ? $request->file('supporting_document')->store('leave-documents')
+            : null;
         $leaveRequest = LeaveRequest::create([
-            ...$request->safe()->only(['replacement_employee_id', 'start_date', 'end_date', 'reason']),
+            ...$request->safe()->only(['leave_type', 'replacement_employee_id', 'start_date', 'end_date', 'start_time', 'end_time', 'reason']),
             'employee_id' => $employee->id,
             'direct_supervisor_id' => $employee->supervisor_id,
             'total_working_days' => $request->workingDays(),
+            'duration_minutes' => $request->durationMinutes(),
+            'supporting_document_path' => $documentPath,
             'status' => LeaveRequestStatus::PendingSupervisor,
             'submitted_at' => now(),
         ]);

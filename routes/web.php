@@ -13,6 +13,7 @@ use App\Http\Controllers\EmployeeImportTemplateController;
 use App\Http\Controllers\EmployeeTodoController;
 use App\Http\Controllers\HrLeaveApprovalController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\LeaveRequestDocumentController;
 use App\Http\Controllers\LecturerBapController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PayrollPeriodController;
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function (): void {
     Route::resource('work-reports', WorkReportController::class)->only(['store', 'destroy']);
     Route::get('bap-saya', LecturerBapController::class)->name('lecturer-bap.index');
     Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('leave-requests/{leaveRequest}/document', LeaveRequestDocumentController::class)->name('leave-requests.document');
     Route::put('leave-requests/{leaveRequest}/supervisor-approval', [SupervisorLeaveApprovalController::class, 'update'])->name('leave-requests.supervisor-approval');
     Route::put('leave-requests/{leaveRequest}/hr-approval', [HrLeaveApprovalController::class, 'update'])->name('leave-requests.hr-approval');
 });

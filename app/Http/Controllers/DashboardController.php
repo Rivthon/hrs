@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\LeaveRequestStatus;
+use App\Enums\LeaveType;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -90,6 +91,7 @@ class DashboardController extends Controller
         $employee->load(['department', 'position', 'supervisor'])
             ->loadSum(['leaveRequests as approved_leave_days' => fn ($query) => $query
                 ->where('status', LeaveRequestStatus::Approved->value)
+                ->where('leave_type', LeaveType::Annual->value)
                 ->whereYear('start_date', now()->year)], 'total_working_days');
 
         $todos = $employee->todos()

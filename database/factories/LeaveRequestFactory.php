@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\LeaveRequestStatus;
+use App\Enums\LeaveType;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ class LeaveRequestFactory extends Factory
             'employee_id' => Employee::factory(),
             'replacement_employee_id' => Employee::factory(),
             'direct_supervisor_id' => Employee::factory(),
+            'leave_type' => LeaveType::Annual,
             'start_date' => now()->addWeek()->startOfWeek(),
             'end_date' => now()->addWeek()->startOfWeek()->addDays(2),
             'total_working_days' => 3,

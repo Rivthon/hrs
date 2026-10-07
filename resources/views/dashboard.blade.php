@@ -42,7 +42,7 @@
             <div class="divide-y divide-slate-100">
                 @forelse ($pendingLeaveRequests as $leaveRequest)
                     <a href="{{ route('leave-requests.show', $leaveRequest) }}" class="flex flex-col justify-between gap-3 px-5 py-4 hover:bg-slate-50 sm:flex-row sm:items-center md:px-6">
-                        <div><p class="font-medium">{{ $leaveRequest->employee->display_name }}</p><p class="mt-1 text-xs text-slate-400">{{ $leaveRequest->employee->department->name }} · {{ $leaveRequest->start_date->format('d/m/Y') }}–{{ $leaveRequest->end_date->format('d/m/Y') }} · {{ $leaveRequest->total_working_days }} hari</p></div>
+                        <div><p class="font-medium">{{ $leaveRequest->employee->display_name }}</p><p class="mt-1 text-xs font-semibold text-brand-700">{{ $leaveRequest->leave_type->label() }}</p><p class="mt-1 text-xs text-slate-400">{{ $leaveRequest->employee->department->name }} · {{ $leaveRequest->start_date->format('d/m/Y') }}–{{ $leaveRequest->end_date->format('d/m/Y') }} · {{ $leaveRequest->durationLabel() }}</p></div>
                         <span @class(['w-fit rounded-full px-3 py-1 text-xs font-semibold', 'bg-amber-50 text-amber-700' => $leaveRequest->status === \App\Enums\LeaveRequestStatus::PendingSupervisor, 'bg-sky-50 text-sky-700' => $leaveRequest->status === \App\Enums\LeaveRequestStatus::PendingHr])>{{ $leaveRequest->status->label() }}</span>
                     </a>
                 @empty
