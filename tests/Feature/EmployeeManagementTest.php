@@ -37,7 +37,7 @@ class EmployeeManagementTest extends TestCase
         $employee = Employee::where('nip', '198765432100000001')->firstOrFail();
         $response->assertRedirect(route('employees.show', $employee));
         $this->assertSame('Jl. Kampus No. 10', $employee->residential_address);
-        $this->assertTrue($employee->user->must_change_password);
+        $this->assertFalse($employee->user->must_change_password);
         $response->assertSessionHas('temporary_password');
         $this->assertFalse(Hash::check('198765432100000001', $employee->user->password));
     }
@@ -71,7 +71,7 @@ class EmployeeManagementTest extends TestCase
 
         $this->assertNotNull($employee->user);
         $this->assertSame('rival@sbh.ac.id', $employee->user->email);
-        $this->assertTrue($employee->user->must_change_password);
+        $this->assertFalse($employee->user->must_change_password);
         $this->assertFalse(Hash::check($employee->nip, $employee->user->password));
     }
 

@@ -7,7 +7,7 @@
     </div>
 
     @if (session('temporary_password'))
-        <div class="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p class="font-semibold">Password sementara — hanya ditampilkan sekali</p><p class="mt-2 font-mono text-xl tracking-wide">{{ session('temporary_password') }}</p><p class="mt-2 text-sm">Salin dan berikan secara aman kepada pengguna. Pengguna wajib menggantinya saat login pertama.</p></div>
+        <div class="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p class="font-semibold">Password sementara — hanya ditampilkan sekali</p><p class="mt-2 font-mono text-xl tracking-wide">{{ session('temporary_password') }}</p><p class="mt-2 text-sm">Salin dan berikan secara aman kepada pengguna. Password ini dapat langsung digunakan untuk login.</p></div>
     @endif
 
     <div class="mt-6 grid gap-6 lg:grid-cols-[20rem_1fr]">

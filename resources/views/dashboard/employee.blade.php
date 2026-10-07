@@ -3,6 +3,8 @@
 @section('title', (auth()->user()->role === 'dosen' ? 'Dashboard Dosen' : 'Dashboard Tendik').' | HRS Kampus')
 
 @section('content')
+    @include('dashboard._leave-popup', ['employeesOnLeaveToday' => $employeesOnLeaveToday])
+
     <section class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
             <p class="text-sm font-semibold text-brand-600">{{ auth()->user()->role === 'dosen' ? 'Dashboard Dosen' : 'Dashboard Tendik' }}</p>

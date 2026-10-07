@@ -21,7 +21,7 @@ class EmployeePasswordResetController extends Controller
         $temporaryPassword = Str::password(16);
         $employee->user->update([
             'password' => $temporaryPassword,
-            'must_change_password' => true,
+            'must_change_password' => false,
         ]);
         $recordAuditLog->handle('password.reset', $employee->user, 'Mereset password '.$employee->full_name);
 

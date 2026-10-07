@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\LeaveRequestStatus;
+use App\Enums\LeaveType;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
@@ -100,5 +101,58 @@ class DashboardControllerTest extends TestCase
             ->assertSeeText('Dashboard Tendik')
             ->assertDontSeeText('Payroll terbaru')
             ->assertDontSeeText('Rp 99.000.000');
+    }
+
+    public function test_dashboard_popup_only_shows_employees_currently_on_approved_leave(): void
+    {
+        $this->travelTo('2026-10-07 10:00:00');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $lecturerUser = User::factory()->create(['role' => 'dosen']);
+        $department = Department::factory()->create();
+        $position = Position::factory()->create();
+        $lecturer = Employee::factory()->active()->for($lecturerUser)->for($department)->for($position)->create(['full_name' => 'Dosen Sedang Cuti']);
+        $finishedEmployee = Employee::factory()->active()->for($department)->for($position)->create(['full_name' => 'Pegawai Selesai Cuti']);
+        LeaveRequest::factory()->create([
+            'employee_id' => $lecturer->id,
+            'status' => LeaveRequestStatus::Approved,
+            'leave_type' => LeaveType::Annual,
+            'start_date' => '2026-10-06',
+            'end_date' => '2026-10-08',
+        ]);
+        LeaveRequest::factory()->create([
+            'employee_id' => $finishedEmployee->id,
+            'status' => LeaveRequestStatus::Approved,
+            'leave_type' => LeaveType::Annual,
+            'start_date' => '2026-10-05',
+            'end_date' => '2026-10-06',
+        ]);
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('Tendik atau Dosen yang sedang Cuti Hari Ini')
+            ->assertSeeText('Dosen Sedang Cuti')
+            ->assertViewHas('employeesOnLeaveToday', fn ($leaveRequests): bool => $leaveRequests->pluck('employee_id')->all() === [$lecturer->id]);
+    }
+
+    public function test_finished_hourly_leave_is_not_shown_in_dashboard_popup(): void
+    {
+        $this->travelTo('2026-10-07 15:00:00');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $employee = Employee::factory()->active()->create(['full_name' => 'Izin Sudah Selesai']);
+        LeaveRequest::factory()->create([
+            'employee_id' => $employee->id,
+            'status' => LeaveRequestStatus::Approved,
+            'leave_type' => LeaveType::Hourly,
+            'start_date' => '2026-10-07',
+            'end_date' => '2026-10-07',
+            'start_time' => '08:00:00',
+            'end_time' => '10:00:00',
+            'duration_minutes' => 120,
+            'total_working_days' => 0,
+        ]);
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSeeText('Tendik atau Dosen yang sedang Cuti Hari Ini');
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Position;
 use App\Models\PublicHoliday;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -20,9 +21,10 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $user = auth()->user();
+        $employeesOnLeaveToday = $this->employeesOnLeaveToday();
 
         if (! $user->can('manage-users')) {
-            return $this->employeeDashboard($user);
+            return $this->employeeDashboard($user, $employeesOnLeaveToday);
         }
 
         $statistics = [
@@ -80,10 +82,12 @@ class DashboardController extends Controller
             'departmentSummaries',
             'latestPayrollPeriod',
             'upcomingHolidays',
+            'employeesOnLeaveToday',
         ));
     }
 
-    private function employeeDashboard(User $user): View
+    /** @param Collection<int, LeaveRequest> $employeesOnLeaveToday */
+    private function employeeDashboard(User $user, Collection $employeesOnLeaveToday): View
     {
         $employee = $user->employee;
         abort_unless($employee, 404, 'Data pegawai HRS belum tersedia.');
@@ -110,7 +114,33 @@ class DashboardController extends Controller
             ->get();
         $bapSummary = $user->role === 'dosen' ? $this->lecturerBapSummary($employee) : null;
 
-        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'bapSummary'));
+        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'bapSummary', 'employeesOnLeaveToday'));
+    }
+
+    /** @return Collection<int, LeaveRequest> */
+    private function employeesOnLeaveToday(): Collection
+    {
+        return LeaveRequest::query()
+            ->with([
+                'employee:id,user_id,department_id,position_id,full_name,title_prefix,title_suffix',
+                'employee.user:id,role',
+                'employee.department:id,name',
+                'employee.position:id,name',
+            ])
+            ->where('status', LeaveRequestStatus::Approved->value)
+            ->whereDate('start_date', '<=', today())
+            ->whereDate('end_date', '>=', today())
+            ->where(function ($query): void {
+                $query->whereNotIn('leave_type', [LeaveType::HalfDay->value, LeaveType::Hourly->value])
+                    ->orWhere(function ($query): void {
+                        $query->whereDate('start_date', today())
+                            ->whereTime('start_time', '<=', now()->format('H:i:s'))
+                            ->whereTime('end_time', '>=', now()->format('H:i:s'));
+                    });
+            })
+            ->whereHas('employee', fn ($query) => $query->where('status', 'active'))
+            ->orderBy('end_date')
+            ->get();
     }
 
     /** @return array{connected: bool, academic_year: ?string, theory: int, practice: int, meetings: mixed} */

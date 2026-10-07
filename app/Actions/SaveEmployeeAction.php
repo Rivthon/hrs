@@ -33,7 +33,7 @@ class SaveEmployeeAction
 
             if ($isNewUser) {
                 $user->password = $initialPassword ?? Str::password(16);
-                $user->must_change_password = $data['role'] !== 'dosen';
+                $user->must_change_password = false;
             }
 
             $user->save();

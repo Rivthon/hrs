@@ -12,11 +12,12 @@ class PasswordSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_non_lecturer_with_temporary_password_must_change_it_before_accessing_app(): void
+    public function test_non_lecturer_with_temporary_password_can_access_app_without_changing_it(): void
     {
         $user = User::factory()->create(['role' => 'staff', 'must_change_password' => true]);
+        Employee::factory()->for($user)->create();
 
-        $this->actingAs($user)->get(route('dashboard'))->assertRedirect(route('password.change'));
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
     }
 
     public function test_non_lecturer_can_change_temporary_password(): void
@@ -46,7 +47,7 @@ class PasswordSecurityTest extends TestCase
         $response = $this->actingAs($hr)->post(route('employees.reset-password', $staffEmployee));
 
         $response->assertRedirect()->assertSessionHas('temporary_password');
-        $this->assertTrue($staff->refresh()->must_change_password);
+        $this->assertFalse($staff->refresh()->must_change_password);
         $this->assertDatabaseHas('audit_logs', ['event' => 'password.reset', 'actor_user_id' => $hr->id]);
         $this->actingAs($hr)->post(route('employees.reset-password', $lecturerEmployee))->assertForbidden();
     }

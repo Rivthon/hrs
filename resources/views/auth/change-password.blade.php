@@ -5,7 +5,7 @@
         <section class="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm md:p-8">
             <p class="text-sm font-semibold text-amber-700">Keamanan akun</p>
             <h1 class="mt-2 text-3xl font-semibold">Buat password baru</h1>
-            <p class="mt-3 text-sm leading-6 text-slate-500">Password sementara harus diganti sebelum Anda dapat menggunakan HRS. Gunakan minimal 12 karakter yang berisi huruf dan angka.</p>
+            <p class="mt-3 text-sm leading-6 text-slate-500">Anda dapat mengganti password secara sukarela. Gunakan minimal 12 karakter yang berisi huruf dan angka.</p>
             <form method="POST" action="{{ route('password.update') }}" class="mt-7 space-y-5">
                 @csrf
                 @method('PUT')

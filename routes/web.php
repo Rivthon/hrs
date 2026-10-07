@@ -30,7 +30,7 @@ use App\Http\Controllers\WorkReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
-Route::get('dashboard', DashboardController::class)->middleware(['auth', 'password.changed'])->name('dashboard');
+Route::get('dashboard', DashboardController::class)->middleware('auth')->name('dashboard');
 Route::middleware('guest')->group(function (): void {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function (): void {
     Route::put('ganti-password', [PasswordChangeController::class, 'update'])->name('password.update');
 });
 
-Route::middleware(['auth', 'password.changed'])->group(function (): void {
+Route::middleware('auth')->group(function (): void {
     Route::resource('business-trips', BusinessTripController::class)->only(['index', 'store', 'show']);
     Route::put('business-trips/{businessTrip}/response', [BusinessTripResponseController::class, 'update'])->name('business-trips.response.update');
     Route::put('business-trips/{businessTrip}/report', [BusinessTripReportController::class, 'update'])->name('business-trips.report.update');
@@ -56,7 +56,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
     Route::put('leave-requests/{leaveRequest}/hr-approval', [HrLeaveApprovalController::class, 'update'])->name('leave-requests.hr-approval');
 });
 
-Route::middleware(['auth', 'password.changed', 'can:manage-users'])->group(function (): void {
+Route::middleware(['auth', 'can:manage-users'])->group(function (): void {
     Route::get('audit-logs', AuditLogController::class)->name('audit-logs.index');
     Route::get('employees/export', EmployeeExportController::class)->name('employees.export');
     Route::get('employees/import-template', EmployeeImportTemplateController::class)->name('employees.import-template');

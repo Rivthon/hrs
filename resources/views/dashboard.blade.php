@@ -3,6 +3,8 @@
 @section('title', 'Dashboard | HRS Kampus')
 
 @section('content')
+    @include('dashboard._leave-popup', ['employeesOnLeaveToday' => $employeesOnLeaveToday])
+
     <section class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
             <p class="text-sm font-semibold text-brand-600">Dashboard admin</p>
