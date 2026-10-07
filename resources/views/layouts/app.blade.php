@@ -16,16 +16,17 @@
             </a>
             <nav class="mt-10 flex flex-col gap-1 text-sm font-medium">
                 <a href="{{ route('dashboard') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Dashboard</a>
-                <a href="{{ route('employees.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Manajemen User</a>
+                @can('manage-users')<a href="{{ route('employees.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('employees.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Manajemen User</a>@endcan
                 @can('manage-users')<a href="{{ route('departments.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('departments.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Master Departemen</a>@endcan
                 <a href="{{ route('leave-requests.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('leave-requests.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Cuti & Izin</a>
+                <a href="{{ route('business-trips.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('business-trips.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">{{ auth()->user()?->can('manage-users') ? 'Penugasan Dinas' : 'Laporan Perjalanan Dinas' }}</a>
                 @if (auth()->user()?->role === 'dosen')<a href="{{ route('lecturer-bap.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('lecturer-bap.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">BAP Saya</a>@endif
                 @can('manage-users')<a href="{{ route('payroll-periods.index') }}" class="rounded-xl px-4 py-3 {{ request()->routeIs('payroll-periods.*', 'payrolls.*') ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50' }}">Payroll</a>@endcan
                 @foreach (['Kehadiran'] as $menu)
                     <span class="cursor-not-allowed rounded-xl px-4 py-3 text-slate-300">{{ $menu }}</span>
                 @endforeach
             </nav>
-            <div class="mt-auto rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">Kelola data SDM kampus secara terpusat.</div>
+            <div class="mt-auto rounded-2xl bg-slate-900 p-4 text-sm text-slate-300">{{ auth()->user()?->can('manage-users') ? 'Kelola data SDM kampus secara terpusat.' : 'Kelola pekerjaan dan administrasi Anda dalam satu tempat.' }}</div>
         </aside>
         <main class="min-w-0">
             <header class="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 md:px-8">

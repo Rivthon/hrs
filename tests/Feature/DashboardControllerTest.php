@@ -2,9 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LeaveRequestStatus;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
+use App\Models\Payroll;
+use App\Models\PayrollPeriod;
 use App\Models\Position;
+use App\Models\PublicHoliday;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,8 +31,13 @@ class DashboardControllerTest extends TestCase
             ->assertViewHas('statistics', [
                 'employees' => 3,
                 'active_employees' => 2,
+                'lecturers' => 0,
+                'staff' => 0,
                 'departments' => 1,
                 'positions' => 1,
+                'pending_supervisor_leave' => 0,
+                'pending_hr_leave' => 0,
+                'approved_leave_this_month' => 0,
             ])
             ->assertSee('Ringkasan SDM Kampus')
             ->assertSee($department->name);
@@ -44,5 +54,51 @@ class DashboardControllerTest extends TestCase
         $this->actingAs($user)->get(route('dashboard'))
             ->assertViewHas('statistics.departments', 1)
             ->assertViewHas('statistics.positions', 1);
+    }
+
+    public function test_admin_dashboard_shows_actionable_leave_payroll_and_holiday_information(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $lecturerUser = User::factory()->create(['role' => 'dosen']);
+        $department = Department::factory()->create(['name' => 'Farmasi']);
+        $position = Position::factory()->create();
+        $lecturer = Employee::factory()->active()->for($lecturerUser)->for($department)->for($position)->create();
+        $replacement = Employee::factory()->active()->for($department)->for($position)->create();
+        LeaveRequest::factory()->create([
+            'employee_id' => $lecturer->id,
+            'replacement_employee_id' => $replacement->id,
+            'direct_supervisor_id' => $replacement->id,
+            'status' => LeaveRequestStatus::PendingHr,
+        ]);
+        $payrollPeriod = PayrollPeriod::factory()->create(['period_date' => '2026-10-01']);
+        Payroll::factory()->for($payrollPeriod, 'period')->for($lecturer)->create(['net_salary' => 5500000]);
+        PublicHoliday::factory()->create([
+            'holiday_date' => now()->addWeek()->toDateString(),
+            'name' => 'Libur Kampus',
+        ]);
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertViewHas('statistics.pending_hr_leave', 1)
+            ->assertViewHas('statistics.lecturers', 1)
+            ->assertSeeText('Pengajuan Cuti Terbaru')
+            ->assertSeeText('Payroll terbaru')
+            ->assertSeeText('Rp 5.500.000')
+            ->assertSeeText('Libur Kampus')
+            ->assertSeeText('Farmasi');
+    }
+
+    public function test_staff_dashboard_does_not_expose_admin_payroll_summary(): void
+    {
+        $staff = User::factory()->create(['role' => 'staff']);
+        Employee::factory()->for($staff)->create();
+        $payrollPeriod = PayrollPeriod::factory()->create();
+        Payroll::factory()->for($payrollPeriod, 'period')->create(['net_salary' => 99000000]);
+
+        $this->actingAs($staff)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('Dashboard Tendik')
+            ->assertDontSeeText('Payroll terbaru')
+            ->assertDontSeeText('Rp 99.000.000');
     }
 }

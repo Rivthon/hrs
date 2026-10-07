@@ -24,7 +24,7 @@
                     'Kepegawaian' => [
                         'Tanggal masuk' => $employee->joined_on->format('d/m/Y'), 'Departemen' => $employee->department->name, 'Jabatan' => $employee->position?->name,
                         'Atasan langsung' => $employee->supervisor?->display_name ?? '-', 'Jenis kepegawaian' => $employee->employment_type,
-                        'NIDN' => $employee->nidn ?: '-', 'BPJS Kesehatan' => $employee->bpjs_health_number ?: '-', 'BPJS Ketenagakerjaan' => $employee->bpjs_employment_number ?: '-', 'Jatah cuti' => $employee->annual_leave_days.' hari',
+                        'NIDN' => $employee->nidn ?: '-', 'BPJS Kesehatan' => $employee->bpjs_health_number ?: '-', 'BPJS Ketenagakerjaan' => $employee->bpjs_employment_number ?: '-', 'Jatah cuti' => $employee->annual_leave_days.' hari', 'Cuti terpakai '.now()->year => (int) $employee->approved_leave_days.' hari', 'Sisa cuti '.now()->year => max(0, $employee->annual_leave_days - (int) $employee->approved_leave_days).' hari',
                     ],
                     'Pendidikan & Penghasilan' => [
                         'Pendidikan terakhir' => $employee->last_education, 'Perguruan tinggi' => $employee->university, 'Program studi' => $employee->study_program,

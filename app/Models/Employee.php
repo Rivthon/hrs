@@ -88,6 +88,21 @@ class Employee extends Model
         return $this->hasMany(Payroll::class);
     }
 
+    public function todos(): HasMany
+    {
+        return $this->hasMany(EmployeeTodo::class);
+    }
+
+    public function workReports(): HasMany
+    {
+        return $this->hasMany(WorkReport::class);
+    }
+
+    public function businessTrips(): HasMany
+    {
+        return $this->hasMany(BusinessTrip::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return collect([$this->title_prefix, $this->full_name, $this->title_suffix])

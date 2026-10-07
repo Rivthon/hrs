@@ -28,19 +28,20 @@
     <div class="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full min-w-[60rem] text-left text-sm">
-                <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Pegawai</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Departemen / Jabatan</th><th class="px-5 py-3">Role</th><th class="px-5 py-3">Masa kerja</th><th class="px-5 py-3 text-right">Aksi</th></tr></thead>
+                <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Pegawai</th><th class="px-5 py-3">NIP / NIDN</th><th class="px-5 py-3">Departemen / Jabatan</th><th class="px-5 py-3">Role</th><th class="px-5 py-3">Cuti {{ now()->year }}</th><th class="px-5 py-3">Masa kerja</th><th class="px-5 py-3 text-right">Aksi</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($employees as $employee)
                         <tr class="hover:bg-slate-50/70">
                             <td class="px-5 py-4"><p class="font-semibold">{{ $employee->display_name }}</p><p class="mt-1 text-xs text-slate-400">{{ $employee->email }}</p></td>
-                            <td class="px-5 py-4 text-slate-600">{{ $employee->nip ?? $employee->employee_number }}</td>
+                            <td class="px-5 py-4 text-slate-600"><p>{{ $employee->nip ?? $employee->employee_number }}</p><p class="mt-1 text-xs text-slate-400">NIDN: {{ $employee->nidn ?: '-' }}</p></td>
                             <td class="px-5 py-4"><p>{{ $employee->department->name }}</p><p class="mt-1 text-xs text-slate-400">{{ $employee->position?->name ?? '-' }}</p></td>
                             <td class="px-5 py-4"><span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold uppercase text-brand-700">{{ $employee->user?->role ?? 'belum ada akun' }}</span></td>
+                            <td class="px-5 py-4"><p class="font-semibold text-brand-700">Sisa {{ max(0, $employee->annual_leave_days - (int) $employee->approved_leave_days) }} hari</p><p class="mt-1 text-xs text-slate-400">Jatah {{ $employee->annual_leave_days }} hari</p></td>
                             <td class="px-5 py-4 text-slate-600">{{ $employee->length_of_service }}</td>
                             <td class="px-5 py-4 text-right"><a href="{{ route('employees.show', $employee) }}" class="font-semibold text-brand-700">Detail</a><a href="{{ route('employees.edit', $employee) }}" class="ml-4 font-semibold text-slate-600">Edit</a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-5 py-12 text-center text-slate-400">Data pengguna tidak ditemukan.</td></tr>
+                        <tr><td colspan="7" class="px-5 py-12 text-center text-slate-400">Data pengguna tidak ditemukan.</td></tr>
                     @endforelse
                 </tbody>
             </table>

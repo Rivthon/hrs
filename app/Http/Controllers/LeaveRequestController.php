@@ -19,6 +19,9 @@ class LeaveRequestController extends Controller
     {
         Gate::authorize('viewAny', LeaveRequest::class);
         $employee = auth()->user()->employee;
+        $employee->loadSum(['leaveRequests as approved_leave_days' => fn ($query) => $query
+            ->where('status', LeaveRequestStatus::Approved->value)
+            ->whereYear('start_date', now()->year)], 'total_working_days');
         $myRequests = LeaveRequest::query()->with(['replacement', 'directSupervisor'])
             ->whereBelongsTo($employee)->latest('submitted_at')->paginate(10);
         $supervisorRequests = LeaveRequest::query()->with(['employee', 'replacement'])
@@ -31,7 +34,7 @@ class LeaveRequestController extends Controller
                 ->where('status', LeaveRequestStatus::PendingHr)->latest('submitted_at')->get();
         }
 
-        return view('leave-requests.index', compact('myRequests', 'supervisorRequests', 'hrRequests'));
+        return view('leave-requests.index', compact('employee', 'myRequests', 'supervisorRequests', 'hrRequests'));
     }
 
     /**

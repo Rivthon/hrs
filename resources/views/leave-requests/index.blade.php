@@ -6,6 +6,12 @@
         <div class="flex gap-2">@can('manage-users')<a href="{{ route('public-holidays.index') }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold">Master Tanggal Merah</a>@endcan<a href="{{ route('leave-requests.create') }}" class="rounded-xl bg-brand-600 px-5 py-2.5 text-center text-sm font-semibold text-white">+ Ajukan Cuti</a></div>
     </div>
 
+    <section class="mt-7 grid gap-4 sm:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p class="text-sm text-slate-500">Jatah Cuti {{ now()->year }}</p><p class="mt-2 text-3xl font-semibold">{{ $employee->annual_leave_days }} <span class="text-base font-normal text-slate-400">hari</span></p></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p class="text-sm text-slate-500">Sudah Disetujui SDM</p><p class="mt-2 text-3xl font-semibold">{{ (int) $employee->approved_leave_days }} <span class="text-base font-normal text-slate-400">hari</span></p></div>
+        <div class="rounded-2xl border border-brand-200 bg-brand-50 p-5 shadow-sm"><p class="text-sm text-brand-700">Sisa Cuti</p><p class="mt-2 text-3xl font-semibold text-brand-700">{{ max(0, $employee->annual_leave_days - (int) $employee->approved_leave_days) }} <span class="text-base font-normal">hari</span></p></div>
+    </section>
+
     @if ($supervisorRequests->isNotEmpty() || $hrRequests->isNotEmpty())
         <section class="mt-7 grid gap-5 xl:grid-cols-2">
             @if ($supervisorRequests->isNotEmpty())

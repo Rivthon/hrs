@@ -79,6 +79,12 @@ class LeaveRequestWorkflowTest extends TestCase
         ])->assertRedirect(route('leave-requests.index'));
         $this->assertSame(LeaveRequestStatus::Approved, $leaveRequest->refresh()->status);
         $this->assertSame($hr->id, $leaveRequest->hr_approved_by_id);
+        $this->assertSame(12, $applicant->refresh()->annual_leave_days);
+
+        $this->actingAs($applicant->user)->get(route('leave-requests.index'))
+            ->assertOk()
+            ->assertSeeText('Sisa Cuti')
+            ->assertSeeText('9 hari');
     }
 
     public function test_unrelated_employee_cannot_approve_leave(): void

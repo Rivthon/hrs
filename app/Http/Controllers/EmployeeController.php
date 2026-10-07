@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\SaveEmployeeAction;
+use App\Enums\LeaveRequestStatus;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Department;
@@ -23,6 +24,9 @@ class EmployeeController extends Controller
         $search = $request->string('search')->trim()->toString();
         $employees = Employee::query()
             ->with(['department', 'position', 'user'])
+            ->withSum(['leaveRequests as approved_leave_days' => fn ($query) => $query
+                ->where('status', LeaveRequestStatus::Approved->value)
+                ->whereYear('start_date', now()->year)], 'total_working_days')
             ->when($search, function ($query) use ($search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('full_name', 'like', "%{$search}%")
@@ -61,7 +65,10 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee): View
     {
-        $employee->load(['department', 'position', 'supervisor', 'user']);
+        $employee->load(['department', 'position', 'supervisor', 'user'])
+            ->loadSum(['leaveRequests as approved_leave_days' => fn ($query) => $query
+                ->where('status', LeaveRequestStatus::Approved->value)
+                ->whereYear('start_date', now()->year)], 'total_working_days');
 
         return view('employees.show', compact('employee'));
     }

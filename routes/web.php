@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\BusinessTripController;
+use App\Http\Controllers\BusinessTripReportController;
+use App\Http\Controllers\BusinessTripResponseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeExportController;
 use App\Http\Controllers\EmployeeImportController;
 use App\Http\Controllers\EmployeeImportTemplateController;
+use App\Http\Controllers\EmployeeTodoController;
 use App\Http\Controllers\HrLeaveApprovalController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LecturerBapController;
@@ -18,6 +22,7 @@ use App\Http\Controllers\PayrollSlipEmailController;
 use App\Http\Controllers\PublicHolidayController;
 use App\Http\Controllers\PublicHolidaySyncController;
 use App\Http\Controllers\SupervisorLeaveApprovalController;
+use App\Http\Controllers\WorkReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -29,6 +34,13 @@ Route::middleware('guest')->group(function (): void {
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::middleware('auth')->group(function (): void {
+    Route::resource('business-trips', BusinessTripController::class)->only(['index', 'store', 'show']);
+    Route::put('business-trips/{businessTrip}/response', [BusinessTripResponseController::class, 'update'])->name('business-trips.response.update');
+    Route::put('business-trips/{businessTrip}/report', [BusinessTripReportController::class, 'update'])->name('business-trips.report.update');
+    Route::resource('todos', EmployeeTodoController::class)
+        ->parameters(['todos' => 'employeeTodo'])
+        ->only(['store', 'update', 'destroy']);
+    Route::resource('work-reports', WorkReportController::class)->only(['store', 'destroy']);
     Route::get('bap-saya', LecturerBapController::class)->name('lecturer-bap.index');
     Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'create', 'store', 'show']);
     Route::put('leave-requests/{leaveRequest}/supervisor-approval', [SupervisorLeaveApprovalController::class, 'update'])->name('leave-requests.supervisor-approval');
