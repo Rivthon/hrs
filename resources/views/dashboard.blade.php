@@ -5,6 +5,7 @@
 @section('content')
     @include('dashboard._leave-popup', ['employeesOnLeaveToday' => $employeesOnLeaveToday])
     @include('dashboard._supervised-business-trips', ['supervisedBusinessTrips' => $supervisedBusinessTrips])
+    @include('dashboard._supervised-business-trip-reports', ['supervisedBusinessTripReports' => $supervisedBusinessTripReports])
 
     <section class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
@@ -12,7 +13,7 @@
             <h1 class="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">Ringkasan SDM Kampus</h1>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Pantau data pegawai, pengajuan cuti, payroll, dan agenda SDM yang perlu ditindaklanjuti.</p>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm">Diperbarui {{ now()->locale('id')->translatedFormat('d F Y, H.i') }} WIB</div>
+        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm">Diperbarui {{ now(config('app.display_timezone'))->locale('id')->translatedFormat('d F Y, H.i') }} WIB</div>
     </section>
 
     @can('manage-users')

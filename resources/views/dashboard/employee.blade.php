@@ -21,6 +21,7 @@
     </section>
 
     @include('dashboard._supervised-business-trips', ['supervisedBusinessTrips' => $supervisedBusinessTrips])
+    @include('dashboard._supervised-business-trip-reports', ['supervisedBusinessTripReports' => $supervisedBusinessTripReports])
 
     @if ($pendingBusinessTrips->isNotEmpty())
         <section class="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">

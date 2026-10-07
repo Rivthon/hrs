@@ -8,7 +8,7 @@
         <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 class="font-semibold">Penerimaan & Laporan</h2>
             <dl class="mt-5 grid gap-5">
-                <div><dt class="text-xs uppercase text-slate-400">Respons pegawai</dt><dd class="mt-1 text-sm font-medium">{{ $businessTrip->responded_at ? $businessTrip->statusLabel().' pada '.$businessTrip->responded_at->format('d/m/Y H:i') : 'Belum memberikan respons' }}</dd></div>
+                <div><dt class="text-xs uppercase text-slate-400">Respons pegawai</dt><dd class="mt-1 text-sm font-medium">{{ $businessTrip->responded_at ? $businessTrip->statusLabel().' pada '.$businessTrip->responded_at->timezone(config('app.display_timezone'))->format('d/m/Y H:i').' WIB' : 'Belum memberikan respons' }}</dd></div>
                 @if ($businessTrip->rejection_reason)
                     <div><dt class="text-xs uppercase text-slate-400">Alasan penolakan</dt><dd class="mt-1 text-sm leading-6 text-red-600">{{ $businessTrip->rejection_reason }}</dd></div>
                 @endif
@@ -21,7 +21,7 @@
                     @if ($businessTrip->report_image_path)
                         <div><dt class="text-xs uppercase text-slate-400">Foto dokumentasi</dt><dd class="mt-2"><a href="{{ asset('storage/'.$businessTrip->report_image_path) }}" target="_blank"><img src="{{ asset('storage/'.$businessTrip->report_image_path) }}" alt="Dokumentasi {{ $businessTrip->title }}" class="max-h-80 w-full rounded-xl border border-slate-200 object-cover"></a></dd></div>
                     @endif
-                    <div><dt class="text-xs uppercase text-slate-400">Dilaporkan</dt><dd class="mt-1 text-sm font-medium">{{ $businessTrip->reported_at->format('d/m/Y H:i') }}</dd></div>
+                    <div><dt class="text-xs uppercase text-slate-400">Dilaporkan</dt><dd class="mt-1 text-sm font-medium">{{ $businessTrip->reported_at->timezone(config('app.display_timezone'))->format('d/m/Y H:i') }} WIB</dd></div>
                 @else
                     <p class="rounded-xl bg-slate-50 px-4 py-5 text-sm text-slate-400">Laporan perjalanan belum tersedia.</p>
                 @endif

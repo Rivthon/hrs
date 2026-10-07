@@ -166,4 +166,47 @@ class BusinessTripWorkflowTest extends TestCase
             ->assertSeeText('Laporan kegiatan rahasia unit.')
             ->assertSeeText('Target kegiatan tercapai.');
     }
+
+    public function test_direct_supervisor_can_open_subordinate_report_but_unrelated_employee_cannot(): void
+    {
+        $supervisorUser = User::factory()->create(['role' => 'staff']);
+        $supervisor = Employee::factory()->for($supervisorUser)->create();
+        $subordinate = Employee::factory()->create(['supervisor_id' => $supervisor->id, 'full_name' => 'Bawahan Pelapor']);
+        $businessTrip = BusinessTrip::factory()->for($subordinate)->create([
+            'status' => 'reported',
+            'report_summary' => 'Mengikuti kegiatan koordinasi.',
+            'report_result' => 'Kerja sama berhasil disepakati.',
+            'reported_at' => now(),
+        ]);
+        $unrelatedUser = User::factory()->create(['role' => 'staff']);
+        Employee::factory()->for($unrelatedUser)->create();
+
+        $this->actingAs($supervisorUser)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('Laporan Perjalanan Dinas Bawahan')
+            ->assertSeeText('Bawahan Pelapor');
+        $this->actingAs($supervisorUser)->get(route('business-trips.show', $businessTrip))
+            ->assertOk()
+            ->assertSeeText('Mengikuti kegiatan koordinasi.')
+            ->assertSeeText('Kerja sama berhasil disepakati.');
+        $this->actingAs($unrelatedUser)->get(route('business-trips.show', $businessTrip))->assertForbidden();
+    }
+
+    public function test_business_trip_timestamps_are_displayed_in_wib(): void
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+        $employee = Employee::factory()->for($user)->create();
+        $businessTrip = BusinessTrip::factory()->for($employee)->create([
+            'status' => 'reported',
+            'responded_at' => '2026-10-07 03:34:00',
+            'reported_at' => '2026-10-07 03:42:00',
+            'report_summary' => 'Ringkasan kegiatan.',
+            'report_result' => 'Hasil kegiatan.',
+        ]);
+
+        $this->actingAs($user)->get(route('business-trips.show', $businessTrip))
+            ->assertOk()
+            ->assertSeeText('Laporan Selesai pada 07/10/2026 10:34 WIB')
+            ->assertSeeText('07/10/2026 10:42 WIB');
+    }
 }

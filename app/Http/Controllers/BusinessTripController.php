@@ -55,7 +55,9 @@ class BusinessTripController extends Controller
     public function show(BusinessTrip $businessTrip): View
     {
         $user = auth()->user();
-        abort_unless($user->can('manage-users') || $businessTrip->employee_id === $user->employee?->id, 403);
+        $isDirectSupervisor = $user->employee !== null
+            && $businessTrip->employee()->where('supervisor_id', $user->employee->id)->exists();
+        abort_unless($user->can('manage-users') || $businessTrip->employee_id === $user->employee?->id || $isDirectSupervisor, 403);
         $businessTrip->load(['employee.department', 'employee.position', 'assignedBy']);
 
         return view('business-trips.show', compact('businessTrip'));

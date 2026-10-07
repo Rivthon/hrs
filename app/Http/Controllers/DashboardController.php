@@ -24,9 +24,10 @@ class DashboardController extends Controller
         $user = auth()->user();
         $employeesOnLeaveToday = $this->employeesOnLeaveToday();
         $supervisedBusinessTrips = $this->supervisedBusinessTrips($user);
+        $supervisedBusinessTripReports = $this->supervisedBusinessTripReports($user);
 
         if (! $user->can('manage-users')) {
-            return $this->employeeDashboard($user, $employeesOnLeaveToday, $supervisedBusinessTrips);
+            return $this->employeeDashboard($user, $employeesOnLeaveToday, $supervisedBusinessTrips, $supervisedBusinessTripReports);
         }
 
         $statistics = [
@@ -86,14 +87,16 @@ class DashboardController extends Controller
             'upcomingHolidays',
             'employeesOnLeaveToday',
             'supervisedBusinessTrips',
+            'supervisedBusinessTripReports',
         ));
     }
 
     /**
      * @param  Collection<int, LeaveRequest>  $employeesOnLeaveToday
      * @param  Collection<int, BusinessTrip>  $supervisedBusinessTrips
+     * @param  Collection<int, BusinessTrip>  $supervisedBusinessTripReports
      */
-    private function employeeDashboard(User $user, Collection $employeesOnLeaveToday, Collection $supervisedBusinessTrips): View
+    private function employeeDashboard(User $user, Collection $employeesOnLeaveToday, Collection $supervisedBusinessTrips, Collection $supervisedBusinessTripReports): View
     {
         $employee = $user->employee;
         abort_unless($employee, 404, 'Data pegawai HRS belum tersedia.');
@@ -132,7 +135,7 @@ class DashboardController extends Controller
             ->get();
         $bapSummary = $user->role === 'dosen' ? $this->lecturerBapSummary($employee) : null;
 
-        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'replacementLeaveAssignments', 'bapSummary', 'employeesOnLeaveToday', 'supervisedBusinessTrips'));
+        return view('dashboard.employee', compact('employee', 'todos', 'workReports', 'leaveRequests', 'pendingBusinessTrips', 'replacementLeaveAssignments', 'bapSummary', 'employeesOnLeaveToday', 'supervisedBusinessTrips', 'supervisedBusinessTripReports'));
     }
 
     /** @return Collection<int, BusinessTrip> */
@@ -150,6 +153,24 @@ class DashboardController extends Controller
             ->whereIn('status', ['assigned', 'accepted'])
             ->whereDate('end_date', '>=', today())
             ->orderBy('start_date')
+            ->limit(5)
+            ->get();
+    }
+
+    /** @return Collection<int, BusinessTrip> */
+    private function supervisedBusinessTripReports(User $user): Collection
+    {
+        $supervisor = $user->employee;
+
+        if ($supervisor === null) {
+            return new Collection;
+        }
+
+        return BusinessTrip::query()
+            ->with(['employee:id,department_id,full_name,title_prefix,title_suffix', 'employee.department:id,name'])
+            ->whereHas('employee', fn ($query) => $query->where('supervisor_id', $supervisor->id))
+            ->where('status', 'reported')
+            ->latest('reported_at')
             ->limit(5)
             ->get();
     }
